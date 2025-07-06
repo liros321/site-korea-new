@@ -1,12 +1,239 @@
-<!DOCTYPE html>
-<html lang="pt-br">
+<!DOCTYPE html><html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Encomendas - Korea</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pedidos Korea</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: url('https://i.ibb.co/B2840v1j/Oni2.png') no-repeat center center fixed;
+      background-size: cover;
+      color: #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: -1;
+    }
+    header {
+      background-color: rgba(0, 0, 0, 0.8);
+      padding: 20px;
+      text-align: center;
+      width: 100%;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      color: #ff4500;
+    }
+    main {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .section {
+      background: rgba(0, 0, 0, 0.85);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+    .dados, .produtos {
+      text-align: left;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+      font-size: 1.1em;
+    }
+    input[type="number"], input[type="text"] {
+      width: 70%;
+      padding: 5px;
+      border-radius: 4px;
+      border: 1px solid #555;
+      background: #222;
+      color: #fff;
+      text-align: left;
+    }
+    .btn, .price-btn {
+      background-color: #333;
+      border: none;
+      color: #fff;
+      padding: 10px 20px;
+      font-size: 1.1em;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-top: 15px;
+    }
+    .btn:hover, .price-btn.selected {
+      background-color: #ff4500;
+    }
+    .price-btns {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    #mensagemConfirmacao {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #90ee90;
+    }
+    footer {
+      background: rgba(0, 0, 0, 0.7);
+      text-align: center;
+      padding: 10px;
+      color: #ccc;
+      width: 100%;
+    }
+  </style>
 </head>
 <body>
-  <h1>📦 Página de Encomendas</h1>
-  <p>O conteúdo completo do sistema de encomendas vai aqui...</p>
+  <header>
+    <h1>Pedidos Korea</h1>
+  </header>
+  <main>
+    <div class="section">
+      <div class="dados">
+        <h2>Dados do Comprador</h2>
+        <label>Nome: <input type="text" id="nomeComprador"></label>
+        <label>RG: <input type="text" id="rgComprador" maxlength="11" oninput="this.value=this.value.replace(/\D/g,'')"></label>
+        <label>Telefone: <input type="text" id="telefoneComprador" maxlength="7" oninput="mascararTelefone(this)"></label>
+        <label>Discord: <input type="text" id="discordComprador"></label>
+      </div>
+      <div class="produtos">
+        <h2>Produtos</h2>
+        <label>MOCHILA<input type="number" class="item" data-nome="MOCHILA"></label>
+        <label>C4<input type="number" class="item" data-nome="C4"></label>
+        <label>CORDA<input type="number" class="item" data-nome="CORDA"></label>
+        <label>COLETE<input type="number" class="item" data-nome="COLETE"></label>
+        <label>CAPUZ<input type="number" class="item" data-nome="CAPUZ"></label>
+        <label>CHAVE LOJINHA<input type="number" class="item" data-nome="CHAVE LOJINHA"></label>
+        <label>CHAVE JOALHERIA<input type="number" class="item" data-nome="CHAVE JOALHERIA"></label>
+        <label>CHAVE BANCO<input type="number" class="item" data-nome="CHAVE BANCO"></label>
+      </div>
+      <div class="price-btns">
+        <button class="price-btn selected" onclick="selecionarPreco(this, 'padrao')">Preço Padrão</button>
+        <button class="price-btn" onclick="selecionarPreco(this, 'parceria')">Preço Parceria</button>
+      </div>
+      <button class="btn" id="botaoPedido" onclick="encomendar()">🛒 Enviar Pedido</button>
+      <div id="resultado" style="margin-top: 20px; text-align:left;"></div>
+      <div id="mensagemConfirmacao"></div>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2025 Korea. Todos os direitos reservados.</p>
+  </footer>
+  <script>
+    let tipoPreco = "padrao";
+    const precos = {
+      "MOCHILA": {padrao: 10000, parceria: 7000},
+      "C4": {padrao: 5500, parceria: 4500},
+      "CORDA": {padrao: 7500, parceria: 4500},
+      "COLETE": {padrao: 55000, parceria: 35000},
+      "CAPUZ": {padrao: 12500, parceria: 7500},
+      "CHAVE LOJINHA": {padrao: 60000, parceria: 55000},
+      "CHAVE JOALHERIA": {padrao: 95000, parceria: 85000},
+      "CHAVE BANCO": {padrao: 165000, parceria: 150000}
+    };
+    function selecionarPreco(botao, tipo) {
+      tipoPreco = tipo;
+      document.querySelectorAll('.price-btn').forEach(btn => btn.classList.remove('selected'));
+      botao.classList.add('selected');
+      calcular();
+    }
+    function mascararTelefone(input) {
+      input.value = input.value.replace(/\D/g, '').replace(/(\d{3})(\d{0,3})/, "$1-$2").slice(0,7);
+    }
+    function calcular() {
+      let total = 0;
+      let mensagem = "";
+      document.querySelectorAll(".item").forEach(input => {
+        const nome = input.dataset.nome;
+        const quantidade = parseInt(input.value) || 0;
+        if (quantidade > 0) {
+          const valorItem = quantidade * precos[nome][tipoPreco];
+          mensagem += `${nome}: R$ ${valorItem.toLocaleString()}<br>`;
+          total += valorItem;
+        }
+      });
+      mensagem += `<strong>Total: R$ ${total.toLocaleString()}</strong>`;
+      document.getElementById("resultado").innerHTML = mensagem;
+    }
+    function encomendar() {
+      const nome = document.getElementById("nomeComprador").value.trim();
+      const rg = document.getElementById("rgComprador").value.trim();
+      const telefone = document.getElementById("telefoneComprador").value.trim();
+      const discord = document.getElementById("discordComprador").value.trim();
+      const botao = document.getElementById("botaoPedido");
+      if (!nome || !rg || !telefone || !discord) {
+        alert("Preencha todos os dados do comprador.");
+        return;
+      }
+      let mensagem = `**\u{1F4E6} NOVO PEDIDO – KOREA**\n\u{1F464} Nome: ${nome}\n\u{1F4FA} RG: ${rg}\n\u{1F4F1} Telefone: ${telefone}\n\u{1F3AE} Discord: ${discord}\n\n`;
+      let total = 0;
+      let houvePedido = false;
+      document.querySelectorAll(".item").forEach(input => {
+        const nomeItem = input.dataset.nome;
+        const quantidade = parseInt(input.value) || 0;
+        if (quantidade > 0) {
+          const precoUnitario = precos[nomeItem][tipoPreco];
+          const valorItem = precoUnitario * quantidade;
+          mensagem += `\u{1F538} ${nomeItem}: ${quantidade}x (R$ ${valorItem.toLocaleString()})\n`;
+          total += valorItem;
+          houvePedido = true;
+        }
+      });
+      if (!houvePedido) {
+        alert("Adicione pelo menos um item ao pedido.");
+        return;
+      }
+      mensagem += `\n\u{1F4B0} Total: R$ ${total.toLocaleString()}\n\u{1F3F7}\uFE0F Tipo de preço: ${tipoPreco.toUpperCase()}`;
+      const webhookUrl = "https://discord.com/api/webhooks/1389717044714410024/B5oGMOdzFCoSWkKM8JSeJ0jGdePNl0wEjEUaYYhAulcq2fInSFjWxNjSs2h6KVk-981R";
+      fetch(webhookUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: mensagem })
+      }).then(res => {
+        if (res.ok) {
+          botao.disabled = true;
+          botao.innerText = "Pedido efetuado, aguarde";
+          document.getElementById("mensagemConfirmacao").innerText = "✅ Pedido enviado com sucesso! Em breve um membro da Korea vai entrar em contato para combinar a entrega.";
+          setTimeout(() => {
+            botao.disabled = false;
+            botao.innerText = "🛒 Enviar Pedido";
+            document.getElementById("mensagemConfirmacao").innerText = "";
+          }, 300000); // 5 minutos
+        } else {
+          alert("❌ Erro ao enviar o pedido.");
+        }
+      }).catch(error => {
+        alert("❌ Falha ao conectar com o Discord.");
+        console.error(error);
+      });
+    }
+  </script>
 </body>
 </html>
