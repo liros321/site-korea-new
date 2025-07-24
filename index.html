@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tropa Korea</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: #000;
+      height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      overflow:hidden;
+      color:#fff;
+      opacity:1;
+    }
+
+    /* LOADER */
+    #loader {
+      position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      background:#000;
+      display:flex; justify-content:center; align-items:center;
+      flex-direction:column;
+      z-index:9999;
+      color:#ff4500;
+    }
+
+    .loader-logo {
+      width:180px;
+      animation: loaderGlow 1.5s infinite alternate;
+    }
+    @keyframes loaderGlow {
+      0% {filter:drop-shadow(0 0 5px #ff4500);}
+      100%{filter:drop-shadow(0 0 20px #ff6347);}
+    }
+
+    .loader-text {
+      margin-top:20px; font-size:1.5em; letter-spacing:2px;
+      animation: textPulse 1.2s infinite alternate;
+    }
+    @keyframes textPulse {0%{opacity:0.5;}100%{opacity:1;}}
+
+    .countdown {
+      font-size:3em; margin-top:15px;
+      animation: glow 1s infinite alternate;
+    }
+    @keyframes glow {
+      0%{text-shadow:0 0 10px #ff4500;}
+      100%{text-shadow:0 0 20px #ff6347;}
+    }
+
+    /* CONTEÚDO PRINCIPAL */
+    .main-content {
+      display:none;
+      position:relative;
+      width:100%; height:100%;
+      background:url('https://i.ibb.co/B2840v1j/Oni2.png') no-repeat center center fixed;
+      background-size:cover;
+    }
+
+    body::before {
+      content:"";
+      position:absolute; top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.7);
+      z-index:1;
+      animation:pulse 6s infinite alternate ease-in-out;
+    }
+    @keyframes pulse {
+      0% {background:rgba(0,0,0,0.65);}
+      100%{background:rgba(0,0,0,0.85);}
+    }
+
+    #particles, #sparks, #explosions, #smoke, #light-beam {
+      position:absolute; top:0; left:0;
+      width:100%; height:100%;
+      pointer-events:none;
+      z-index:0;
+    }
+
+    #light-beam {
+      background:linear-gradient(120deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+      animation: lightSweep 8s infinite;
+    }
+    @keyframes lightSweep {
+      0% {transform:translateX(-100%);}
+      50%{transform:translateX(100%);}
+      100%{transform:translateX(-100%);}
+    }
+
+    .container {
+      position:relative; text-align:center;
+      background:rgba(20,20,20,0.85);
+      padding:50px 60px; border-radius:15px;
+      box-shadow:0 0 20px rgba(255,69,0,0.6),0 0 50px rgba(255,69,0,0.3);
+      animation:float 4s ease-in-out infinite;
+      z-index:2;
+      top:50%; left:50%;
+      transform:translate(-50%, -50%);
+      position:absolute;
+    }
+    @keyframes float {
+      0%{transform:translate(-50%, -50%) translateY(0);}
+      50%{transform:translate(-50%, -50%) translateY(-8px);}
+      100%{transform:translate(-50%, -50%) translateY(0);}
+    }
+
+    .logo {width:150px; margin-bottom:20px; animation:glow 2s infinite alternate;}
+
+    h1 {
+      font-size:3.5em; color:#ff4500;
+      text-transform:uppercase; letter-spacing:2px;
+      text-shadow:0 0 10px #ff4500;
+      animation:neonGlow 1.5s ease-in-out infinite alternate;
+      margin-bottom:30px;
+    }
+    @keyframes neonGlow {
+      0%{text-shadow:0 0 10px #ff4500;}
+      100%{text-shadow:0 0 20px #ff6347;}
+    }
+
+    .btn {
+      display:block; width:260px; margin:20px auto;
+      padding:15px; font-size:1.3em; font-weight:bold;
+      color:white; background:linear-gradient(45deg,#ff4500,#ff6347);
+      border:none; border-radius:10px;
+      text-decoration:none; text-transform:uppercase;
+      letter-spacing:1px; box-shadow:0 4px 15px rgba(255,69,0,0.4);
+      transition:all 0.3s ease-in-out; position:relative; overflow:hidden;
+    }
+    .btn::before {
+      content:""; position:absolute; top:0; left:-100%;
+      width:100%; height:100%;
+      background:rgba(255,255,255,0.2);
+      transform:skewX(-20deg); transition:all 0.4s ease-in-out;
+    }
+    .btn:hover::before {left:100%;}
+    .btn:hover {transform:scale(1.08);}
+    .btn:active {transform:scale(0.97);}
+
+    #sound-toggle {
+      position:fixed; bottom:20px; right:20px;
+      background:rgba(255,69,0,0.8); border:none;
+      border-radius:50%; width:50px; height:50px;
+      color:#fff; font-size:1.5em;
+      cursor:pointer; z-index:999;
+    }
+  </style>
+</head>
+<body>
+  <div id="loader">
+    <img class="loader-logo" src="https://i.ibb.co/215KsHzd/a-1f4f6d293574384b5442fe75cd5cdd6e.gif">
+    <div class="loader-text">PREPARANDO O CAMPO DE BATALHA...</div>
+    <div class="countdown" id="countdown">6</div>
+  </div>
+
+  <div class="main-content">
+    <canvas id="particles"></canvas>
+    <canvas id="sparks"></canvas>
+    <canvas id="explosions"></canvas>
+    <canvas id="smoke"></canvas>
+    <div id="light-beam"></div>
+
+    <div class="container">
+      <img class="logo" src="https://i.ibb.co/215KsHzd/a-1f4f6d293574384b5442fe75cd5cdd6e.gif">
+      <h1>Tropa Korea</h1>
+      <a class="btn" href="encomendas.html" onclick="playClick()">📦 Encomendas</a>
+      <a class="btn" href="recrutamento.html" onclick="playClick()">📝 Recrutamento</a>
+    </div>
+
+    <button id="sound-toggle">🔊</button>
+  </div>
+
+  <audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2023/01/26/audio_8783bb6748.mp3?filename=epic-war-trailer-139025.mp3" loop></audio>
+  <audio id="click-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1f7d81c48a.mp3?filename=click-124467.mp3"></audio>
+  <audio id="siren" src="https://cdn.pixabay.com/download/audio/2021/09/17/audio_0c03e8afdf.mp3?filename=air-raid-siren-96206.mp3"></audio>
+  <audio id="explosion-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1c1e772a37.mp3?filename=explosion-124488.mp3"></audio>
+  <audio id="gunfire-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_14b4312e04.mp3?filename=gunfire-124485.mp3"></audio>
+
+  <script>
+    function playClick(){document.getElementById('click-sound').play();}
+
+    const loader=document.getElementById('loader');
+    const mainContent=document.querySelector('.main-content');
+    const bgMusic=document.getElementById('bg-music');
+    const siren=document.getElementById('siren');
+    const explosionSound=document.getElementById('explosion-sound');
+    const gunfireSound=document.getElementById('gunfire-sound');
+
+    let isPlaying=false;
+    document.getElementById('sound-toggle').addEventListener('click',()=>{
+      if(isPlaying){bgMusic.pause();this.textContent='🔇';}
+      else{bgMusic.play();this.textContent='🔊';}
+      isPlaying=!isPlaying;
+    });
+
+    // Contagem regressiva
+    let count=6;
+    const countdownEl=document.getElementById('countdown');
+    const timer=setInterval(()=>{
+      count--; countdownEl.textContent=count;
+      if(count<=0){clearInterval(timer);}
+    },1000);
+
+    // Sirene durante o loader
+    siren.play();
+
+    // Quando loader termina: inicia todos os efeitos
+    setTimeout(()=>{
+      loader.style.display="none";
+      mainContent.style.display="block";
+      bgMusic.play(); isPlaying=true;
+      iniciarEfeitos();
+    },6000);
+
+    function iniciarEfeitos(){
+      // Partículas texto explosivas
+      const canvas=document.getElementById('particles');
+      const ctx=canvas.getContext('2d');
+      canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+      let particlesArray=[];
+      class Particle{
+        constructor(x,y){
+          this.x=Math.random()*canvas.width; this.y=Math.random()*canvas.height;
+          this.size=1.5; this.baseX=x; this.baseY=y;
+          this.density=Math.random()*30+1; this.explode=true;
+        }
+        draw(){ctx.fillStyle='#ff4500';ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fill();}
+        update(){
+          if(this.explode){
+            this.x+=(Math.random()-0.5)*20; this.y+=(Math.random()-0.5)*20;
+            this.explode=false;
+          }
+          let dx=this.baseX-this.x, dy=this.baseY-this.y;
+          this.x+=dx/this.density; this.y+=dy/this.density;
+        }
+      }
+      function init(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle='white'; ctx.font="bold 100px Orbitron";
+        ctx.fillText("TROPA KOREA",canvas.width/6,canvas.height/2);
+        const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+        particlesArray=[];
+        for(let y=0;y<canvas.height;y+=4){
+          for(let x=0;x<canvas.width;x+=4){
+            if(data.data[(y*4*data.width)+(x*4)+3]>128){
+              particlesArray.push(new Particle(x,y));
+            }
+          }
+        }
+      }
+      function animate(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        for(let i=0;i<particlesArray.length;i++){
+          particlesArray[i].draw(); particlesArray[i].update();
+        }
+        requestAnimationFrame(animate);
+      }
+      init(); animate();
+
+      // Faíscas caindo
+      const sparkCanvas=document.getElementById('sparks');
+      const sparkCtx=sparkCanvas.getContext('2d');
+      sparkCanvas.width=window.innerWidth; sparkCanvas.height=window.innerHeight;
+      let sparks=[];
+      class Spark{
+        constructor(){this.x=Math.random()*sparkCanvas.width;this.y=Math.random()*-50;this.size=Math.random()*2+1;this.speedY=Math.random()*2+1;}
+        update(){this.y+=this.speedY;if(this.y>sparkCanvas.height){this.y=Math.random()*-50;this.x=Math.random()*sparkCanvas.width;}}
+        draw(){sparkCtx.fillStyle='rgba(255,100,0,0.8)';sparkCtx.beginPath();sparkCtx.arc(this.x,this.y,this.size,0,Math.PI*2);sparkCtx.fill();}
+      }
+      function sparkInit(){for(let i=0;i<100;i++){sparks.push(new Spark());}}
+      function sparkAnimate(){sparkCtx.clearRect(0,0,sparkCanvas.width,sparkCanvas.height);for(let i=0;i<sparks.length;i++){sparks[i].update();sparks[i].draw();}requestAnimationFrame(sparkAnimate);}
+      sparkInit(); sparkAnimate();
+
+      // Explosões
+      const explosionCanvas=document.getElementById('explosions');
+      const explosionCtx=explosionCanvas.getContext('2d');
+      explosionCanvas.width=window.innerWidth; explosionCanvas.height=window.innerHeight;
+      function drawExplosion(){
+        let x=Math.random()*explosionCanvas.width, y=Math.random()*explosionCanvas.height;
+        let radius=30+Math.random()*30;
+        let gradient=explosionCtx.createRadialGradient(x,y,0,x,y,radius);
+        gradient.addColorStop(0,"rgba(255,200,0,0.8)");
+        gradient.addColorStop(1,"rgba(255,0,0,0)");
+        explosionCtx.fillStyle=gradient;
+        explosionCtx.beginPath(); explosionCtx.arc(x,y,radius,0,Math.PI*2); explosionCtx.fill();
+        explosionSound.play();
+        setTimeout(()=>{explosionCtx.clearRect(0,0,explosionCanvas.width,explosionCanvas.height);},500);
+      }
+      setInterval(drawExplosion,4000);
+
+      // Tiros
+      setInterval(()=>{gunfireSound.play();},6000);
+
+      // Fumaça
+      const smokeCanvas=document.getElementById('smoke');
+      const smokeCtx=smokeCanvas.getContext('2d');
+      smokeCanvas.width=window.innerWidth; smokeCanvas.height=window.innerHeight;
+      let smokes=[];
+      class Smoke{
+        constructor(){
+          this.x=Math.random()*smokeCanvas.width; this.y=smokeCanvas.height+20;
+          this.size=20+Math.random()*30; this.speedY=0.5+Math.random();
+          this.opacity=0.4+Math.random()*0.3;
+        }
+        update(){this.y-=this.speedY;if(this.opacity>0)this.opacity-=0.001;if(this.y<0){this.y=smokeCanvas.height+20;this.opacity=0.5;}}
+        draw(){smokeCtx.fillStyle=`rgba(100,100,100,${this.opacity})`;smokeCtx.beginPath();smokeCtx.arc(this.x,this.y,this.size,0,Math.PI*2);smokeCtx.fill();}
+      }
+      function smokeInit(){for(let i=0;i<40;i++){smokes.push(new Smoke());}}
+      function smokeAnimate(){smokeCtx.clearRect(0,0,smokeCanvas.width,smokeCanvas.height);for(let i=0;i<smokes.length;i++){smokes[i].update();smokes[i].draw();}requestAnimationFrame(smokeAnimate);}
+      smokeInit(); smokeAnimate();
+    }
+  </script>
+</body>
+</html>

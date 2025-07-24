@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Encomendas - Tropa Korea</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {margin:0; padding:0; box-sizing:border-box;}
+    body {
+      font-family:'Orbitron',sans-serif;
+      background:#000;
+      color:#fff;
+      overflow:hidden;
+      height:100vh;
+    }
+
+    /* LOADER */
+    #loader {
+      position:fixed;top:0;left:0;width:100%;height:100%;
+      background:#000;display:flex;flex-direction:column;
+      justify-content:center;align-items:center;z-index:9999;
+    }
+    .loader-logo {width:150px;animation:loaderGlow 1.5s infinite alternate;}
+    @keyframes loaderGlow {
+      0%{filter:drop-shadow(0 0 5px #ff4500);}
+      100%{filter:drop-shadow(0 0 25px #ff6347);}
+    }
+    .loader-text {
+      color:#ff4500;margin-top:20px;font-size:1.3em;
+      letter-spacing:2px;animation:textPulse 1s infinite alternate;
+    }
+    @keyframes textPulse {0%{opacity:0.5;}100%{opacity:1;}}
+    .countdown {
+      font-size:2.5em;color:#ff4500;margin-top:15px;
+      animation:glow 1s infinite alternate;
+    }
+    @keyframes glow {
+      0%{text-shadow:0 0 10px #ff4500;}
+      100%{text-shadow:0 0 20px #ff6347;}
+    }
+
+    /* CONTEÚDO PRINCIPAL */
+    .main-content {
+      display:none;position:relative;
+      width:100%;height:100%;
+      background:url('https://i.ibb.co/B2840v1j/Oni2.png') no-repeat center center fixed;
+      background-size:cover;
+    }
+
+    #particles, #sparks, #explosions, #smoke, #light-beam {
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      pointer-events:none;z-index:0;
+    }
+    #light-beam {
+      background:linear-gradient(120deg,rgba(255,255,255,0.1),rgba(255,255,255,0));
+      animation:lightSweep 8s infinite;
+    }
+    @keyframes lightSweep {
+      0%{transform:translateX(-100%);}
+      50%{transform:translateX(100%);}
+      100%{transform:translateX(-100%);}
+    }
+
+    .container {
+      position:absolute;top:50%;left:50%;
+      transform:translate(-50%,-50%);
+      background:rgba(20,20,20,0.85);
+      padding:30px;border-radius:12px;
+      box-shadow:0 0 20px rgba(255,69,0,0.6),0 0 50px rgba(255,69,0,0.3);
+      z-index:2;width:90%;max-width:700px;
+      text-align:center;
+    }
+
+    h1 {
+      color:#ff4500;font-size:2.2em;margin-bottom:15px;
+      animation:neonGlow 1.5s ease-in-out infinite alternate;
+    }
+    @keyframes neonGlow {
+      0%{text-shadow:0 0 10px #ff4500;}
+      100%{text-shadow:0 0 20px #ff6347;}
+    }
+
+    .dados {text-align:left;margin-bottom:20px;}
+    .dados label {
+      display:block;margin:10px 0 5px;
+    }
+    .dados input {
+      width:100%;padding:8px;border:none;border-radius:6px;
+      background:#222;color:#fff;
+    }
+
+    /* CARDS ULTIMATE */
+    .cards-container {
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+      gap:15px;margin-top:15px;
+    }
+    .card {
+      background:rgba(0,0,0,0.6);
+      border-radius:10px;
+      padding:10px;text-align:center;
+      box-shadow:0 0 10px rgba(255,69,0,0.3);
+      transition:transform 0.3s, box-shadow 0.3s;
+      position:relative;overflow:hidden;
+    }
+    .card:hover {
+      transform:scale(1.08);
+      box-shadow:0 0 20px rgba(255,99,71,0.6);
+    }
+    .card img {width:60px;height:60px;margin-bottom:5px;}
+    .card p {font-size:0.9em;margin-bottom:5px;color:#ff6347;}
+    .card input {
+      width:60px;text-align:center;padding:5px;
+      border:none;border-radius:4px;
+      background:#222;color:#fff;
+      transition:box-shadow 0.3s;
+    }
+    .card.pulsar {
+      animation:pulsar 0.4s ease-in-out;
+    }
+    @keyframes pulsar {
+      0%{box-shadow:0 0 0 rgba(255,69,0,0.5);}
+      50%{box-shadow:0 0 20px rgba(255,69,0,1);}
+      100%{box-shadow:0 0 0 rgba(255,69,0,0.5);}
+    }
+
+    /* FUMAÇA CARDS CAROS */
+    .card.fumaca::before {
+      content:"";
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      background:url('') repeat;
+      opacity:0.15;animation:fumacaMove 5s linear infinite;
+      pointer-events:none;
+    }
+    @keyframes fumacaMove {
+      0%{background-position:0 0;}
+      100%{background-position:100px 200px;}
+    }
+
+    /* BORDA ELÉTRICA (PARCERIA) */
+    .card.eletrica {
+      animation:eletrica 1s infinite alternate;
+    }
+    @keyframes eletrica {
+      0%{box-shadow:0 0 5px #ff4500,0 0 15px #ff6347 inset;}
+      100%{box-shadow:0 0 20px #ff4500,0 0 30px #ff6347 inset;}
+    }
+
+    .price-btns {
+      display:flex;justify-content:center;gap:10px;
+      margin-top:15px;
+    }
+    .price-btn {
+      padding:8px 15px;
+      background:#333;color:#fff;border:none;
+      border-radius:6px;cursor:pointer;
+      transition:background 0.3s;
+    }
+    .price-btn.selected, .price-btn:hover {background:#ff4500;}
+
+    .btn {
+      margin-top:15px;width:100%;
+      padding:12px;background:linear-gradient(45deg,#ff4500,#ff6347);
+      color:#fff;border:none;border-radius:8px;
+      font-size:1.1em;cursor:pointer;
+      transition:all 0.3s ease-in-out;
+    }
+    .btn:hover {transform:scale(1.05);}
+    .btn:disabled {background:#555;cursor:not-allowed;}
+
+    #resultado {
+      margin-top:15px;text-align:left;font-size:0.9em;
+      transition:color 0.3s;
+    }
+    #mensagemConfirmacao {margin-top:10px;color:#00ff99;}
+    .total-highlight {color:#ff4500 !important;}
+  </style>
+</head>
+<body>
+  <!-- LOADER -->
+  <div id="loader">
+    <img class="loader-logo" src="https://i.ibb.co/215KsHzd/a-1f4f6d293574384b5442fe75cd5cdd6e.gif">
+    <div class="loader-text">CARREGANDO LOJA...</div>
+    <div class="countdown" id="countdown">5</div>
+  </div>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <div class="main-content">
+    <canvas id="particles"></canvas>
+    <canvas id="sparks"></canvas>
+    <canvas id="explosions"></canvas>
+    <canvas id="smoke"></canvas>
+    <div id="light-beam"></div>
+
+    <div class="container">
+      <h1>Encomendas - Tropa Korea</h1>
+      <div class="dados">
+        <label>Nome: <input type="text" id="nomeComprador"></label>
+        <label>RG: <input type="text" id="rgComprador" maxlength="6" oninput="this.value=this.value.replace(/\\D/g,'')"></label>
+        <label>Telefone: <input type="text" id="telefoneComprador" maxlength="7" placeholder="000-000" oninput="mascaraTelefone(this)"></label>
+        <label>Discord: <input type="text" id="discordComprador"></label>
+      </div>
+      <div class="cards-container">
+        <div class="card"><img src="https://i.ibb.co/LDfj63Rs/istockphoto-1097216538-612x612-removebg-preview.png"><p>Mochila</p><input type="number" min="0" value="0" data-item="MOCHILA" oninput="calcularCard(this)"></div>
+        <div class="card"><img src="https://i.ibb.co/Jw8HmYwV/c4-bomb-timer-rotation-footage-092840537-iconl-removebg-preview.png"><p>Bomba C4</p><input type="number" min="0" value="0" data-item="C4" oninput="calcularCard(this)"></div>
+        <div class="card"><img src="https://i.ibb.co/jNB0WwN/istockphoto-1159542493-170667a-removebg-preview.png"><p>Corda</p><input type="number" min="0" value="0" data-item="CORDA" oninput="calcularCard(this)"></div>
+        <div class="card"><img src="https://i.ibb.co/rK1zkKPx/images-removebg-preview.png"><p>Colete</p><input type="number" min="0" value="0" data-item="COLETE" oninput="calcularCard(this)"></div>
+        <div class="card"><img src="https://i.ibb.co/prJJB01j/360-F-545979457-qo-SDTSi-Ai-K18-CW9-QFkzb-AN4l8tb16-D3-I-removebg-preview.png"><p>Capuz</p><input type="number" min="0" value="0" data-item="CAPUZ" oninput="calcularCard(this)"></div>
+        <div class="card fumaca"><img src="https://i.ibb.co/sp6MF5Wj/pngtree-yellow-key-png-image-2961767-removebg-preview.png"><p>Chave Lojinha</p><input type="number" min="0" value="0" data-item="CHAVE LOJINHA" oninput="calcularCard(this)"></div>
+        <div class="card fumaca"><img src="https://i.ibb.co/JWMmJTfk/Joalheria-removebg-preview.png"><p>Chave Joalheria</p><input type="number" min="0" value="0" data-item="CHAVE JOALHERIA" oninput="calcularCard(this)"></div>
+        <div class="card fumaca"><img src="https://i.ibb.co/XfJsxt7s/banco-removebg-preview.png"><p>Chave Banco</p><input type="number" min="0" value="0" data-item="CHAVE BANCO" oninput="calcularCard(this)"></div>
+      </div>
+      <div class="price-btns">
+        <button class="price-btn selected" onclick="selecionarPreco(this, 'padrao')">Preço Padrão</button>
+        <button class="price-btn" onclick="selecionarPreco(this, 'parceria')">Preço Parceria</button>
+      </div>
+      <button class="btn" id="botaoPedido" onclick="encomendar()">🛒 Enviar Pedido</button>
+      <div id="resultado"></div>
+      <div id="mensagemConfirmacao"></div>
+    </div>
+  </div>
+
+  <audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2023/01/26/audio_8783bb6748.mp3" loop></audio>
+  <audio id="siren" src="https://cdn.pixabay.com/download/audio/2021/09/17/audio_0c03e8afdf.mp3"></audio>
+  <audio id="cash-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_14b4312e04.mp3?filename=cash-register-124479.mp3"></audio>
+<script>
+  // --- MÁSCARAS ---
+  function mascaraTelefone(input){
+    let v=input.value.replace(/\D/g,'').substring(0,6);
+    input.value=v.length>=4?v.substring(0,3)+'-'+v.substring(3):v;
+  }
+
+  // --- LOADER ---
+  let c=5;
+  const cd=document.getElementById('countdown');
+  const siren=document.getElementById('siren');
+  siren.play();
+  const t=setInterval(()=>{c--;cd.textContent=c;if(c<=0)clearInterval(t);},1000);
+
+  setTimeout(()=>{
+    document.getElementById('loader').style.display='none';
+    document.querySelector('.main-content').style.display='block';
+    document.getElementById('bg-music').play();
+    iniciarEfeitos();
+  },5000);
+
+  // --- EFEITOS CINEMÁTICOS ---
+  function iniciarEfeitos(){iniciarParticulas();iniciarFaíscas();iniciarExplosoes();iniciarFumaca();}
+
+  function iniciarParticulas(){
+    const canvas=document.getElementById('particles');
+    const ctx=canvas.getContext('2d');
+    canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+    let particlesArray=[];
+    class Particle{
+      constructor(x,y){
+        this.x=Math.random()*canvas.width;this.y=Math.random()*canvas.height;
+        this.size=1.5;this.baseX=x;this.baseY=y;
+        this.density=Math.random()*30+1;this.explode=true;
+      }
+      draw(){ctx.fillStyle='#ff4500';ctx.beginPath();ctx.arc(this.x,this.y,this.size,0,Math.PI*2);ctx.fill();}
+      update(){
+        if(this.explode){
+          this.x+=(Math.random()-0.5)*20;this.y+=(Math.random()-0.5)*20;
+          this.explode=false;
+        }
+        let dx=this.baseX-this.x,dy=this.baseY-this.y;
+        this.x+=dx/this.density;this.y+=dy/this.density;
+      }
+    }
+    function init(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='white';ctx.font="bold 80px Orbitron";
+      ctx.fillText("TROPA KOREA",canvas.width/6,canvas.height/2);
+      const data=ctx.getImageData(0,0,canvas.width,canvas.height);
+      particlesArray=[];
+      for(let y=0;y<canvas.height;y+=4){
+        for(let x=0;x<canvas.width;x+=4){
+          if(data.data[(y*4*data.width)+(x*4)+3]>128){
+            particlesArray.push(new Particle(x,y));
+          }
+        }
+      }
+    }
+    function animate(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      for(let i=0;i<particlesArray.length;i++){
+        particlesArray[i].draw();particlesArray[i].update();
+      }
+      requestAnimationFrame(animate);
+    }
+    init();animate();
+  }
+
+  function iniciarFaíscas(){
+    const sparkCanvas=document.getElementById('sparks');
+    const sparkCtx=sparkCanvas.getContext('2d');
+    sparkCanvas.width=window.innerWidth;sparkCanvas.height=window.innerHeight;
+    let sparks=[];
+    class Spark{
+      constructor(){this.x=Math.random()*sparkCanvas.width;this.y=Math.random()*-50;this.size=Math.random()*2+1;this.speedY=Math.random()*2+1;}
+      update(){this.y+=this.speedY;if(this.y>sparkCanvas.height){this.y=Math.random()*-50;this.x=Math.random()*sparkCanvas.width;}}
+      draw(){sparkCtx.fillStyle='rgba(255,100,0,0.8)';sparkCtx.beginPath();sparkCtx.arc(this.x,this.y,this.size,0,Math.PI*2);sparkCtx.fill();}
+    }
+    for(let i=0;i<100;i++){sparks.push(new Spark());}
+    function animate(){
+      sparkCtx.clearRect(0,0,sparkCanvas.width,sparkCanvas.height);
+      for(let i=0;i<sparks.length;i++){sparks[i].update();sparks[i].draw();}
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  function iniciarExplosoes(){
+    const explosionCanvas=document.getElementById('explosions');
+    const explosionCtx=explosionCanvas.getContext('2d');
+    explosionCanvas.width=window.innerWidth;explosionCanvas.height=window.innerHeight;
+    const explosionSound=new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_1c1e772a37.mp3?filename=explosion-124488.mp3");
+    const gunfireSound=new Audio("https://cdn.pixabay.com/download/audio/2022/03/15/audio_14b4312e04.mp3?filename=gunfire-124485.mp3");
+    function drawExplosion(){
+      let x=Math.random()*explosionCanvas.width, y=Math.random()*explosionCanvas.height;
+      let radius=30+Math.random()*30;
+      let gradient=explosionCtx.createRadialGradient(x,y,0,x,y,radius);
+      gradient.addColorStop(0,"rgba(255,200,0,0.8)");
+      gradient.addColorStop(1,"rgba(255,0,0,0)");
+      explosionCtx.fillStyle=gradient;
+      explosionCtx.beginPath();explosionCtx.arc(x,y,radius,0,Math.PI*2);explosionCtx.fill();
+      explosionSound.play();
+      setTimeout(()=>{explosionCtx.clearRect(0,0,explosionCanvas.width,explosionCanvas.height);},500);
+    }
+    setInterval(drawExplosion,4000);
+    setInterval(()=>{gunfireSound.play();},6000);
+  }
+
+  function iniciarFumaca(){
+    const smokeCanvas=document.getElementById('smoke');
+    const smokeCtx=smokeCanvas.getContext('2d');
+    smokeCanvas.width=window.innerWidth;smokeCanvas.height=window.innerHeight;
+    let smokes=[];
+    class Smoke{
+      constructor(){
+        this.x=Math.random()*smokeCanvas.width;this.y=smokeCanvas.height+20;
+        this.size=20+Math.random()*30;this.speedY=0.5+Math.random();
+        this.opacity=0.4+Math.random()*0.3;
+      }
+      update(){this.y-=this.speedY;if(this.opacity>0)this.opacity-=0.001;if(this.y<0){this.y=smokeCanvas.height+20;this.opacity=0.5;}}
+      draw(){smokeCtx.fillStyle=`rgba(100,100,100,${this.opacity})`;smokeCtx.beginPath();smokeCtx.arc(this.x,this.y,this.size,0,Math.PI*2);smokeCtx.fill();}
+    }
+    for(let i=0;i<40;i++){smokes.push(new Smoke());}
+    function animate(){
+      smokeCtx.clearRect(0,0,smokeCanvas.width,smokeCanvas.height);
+      for(let i=0;i<smokes.length;i++){smokes[i].update();smokes[i].draw();}
+      requestAnimationFrame(animate);
+    }
+    animate();
+  }
+
+  // --- PREÇOS E CÁLCULO ---
+  let tipoPreco="padrao";
+  const precos={
+    "MOCHILA":{padrao:10000,parceria:7000},
+    "C4":{padrao:5500,parceria:4500},
+    "CORDA":{padrao:7500,parceria:4500},
+    "COLETE":{padrao:55000,parceria:35000},
+    "CAPUZ":{padrao:12500,parceria:7500},
+    "CHAVE LOJINHA":{padrao:60000,parceria:55000},
+    "CHAVE JOALHERIA":{padrao:95000,parceria:85000},
+    "CHAVE BANCO":{padrao:165000,parceria:150000}
+  };
+  const cashSound=document.getElementById('cash-sound');
+  let lastTotal=0;
+
+  function selecionarPreco(botao,tipo){
+    tipoPreco=tipo;
+    document.querySelectorAll('.price-btn').forEach(btn=>btn.classList.remove('selected'));
+    botao.classList.add('selected');
+    document.querySelectorAll('.card').forEach(card=>{
+      if(tipo==="parceria"){card.classList.add("eletrica");}
+      else{card.classList.remove("eletrica");}
+    });
+    calcular();
+  }
+
+  function calcularCard(input){
+    // Pulsar quando altera
+    const card=input.closest('.card');
+    card.classList.add("pulsar");
+    setTimeout(()=>card.classList.remove("pulsar"),400);
+    calcular();
+  }
+
+  function calcular(){
+    let total=0;let mensagem="";
+    document.querySelectorAll("[data-item]").forEach(input=>{
+      const nome=input.dataset.item;
+      const quantidade=parseInt(input.value)||0;
+      if(quantidade>0){
+        const valorItem=quantidade*precos[nome][tipoPreco];
+        mensagem+=`${nome}: R$ ${valorItem.toLocaleString()}<br>`;
+        total+=valorItem;
+      }
+    });
+    mensagem+=`<strong>Total: R$ ${total.toLocaleString()}</strong>`;
+    const res=document.getElementById("resultado");
+    res.innerHTML=mensagem;
+    if(total>lastTotal){
+      res.classList.add("total-highlight");
+      cashSound.play();
+      setTimeout(()=>res.classList.remove("total-highlight"),300);
+    }
+    lastTotal=total;
+  }
+
+  // --- ENVIO ---
+function encomendar(){
+  const nome=document.getElementById("nomeComprador").value.trim();
+  const rg=document.getElementById("rgComprador").value.trim();
+  const telefone=document.getElementById("telefoneComprador").value.trim();
+  const discord=document.getElementById("discordComprador").value.trim();
+
+  if(!nome||!rg||!telefone||!discord){
+    alert("⚠️ Preencha todos os dados do comprador.");
+    return;
+  }
+
+  let itensLista = "";
+  let total = 0;
+  let houvePedido = false;
+
+  document.querySelectorAll("[data-item]").forEach(input=>{
+    const nomeItem=input.dataset.item;
+    const quantidade=parseInt(input.value)||0;
+    if(quantidade>0){
+      const valorItem = precos[nomeItem][tipoPreco]*quantidade;
+      total += valorItem;
+      houvePedido = true;
+      itensLista += `🔹 **${nomeItem}:** ${quantidade}x (R$ ${valorItem.toLocaleString()})\n`;
+    }
+  });
+
+  if(!houvePedido){
+    alert("⚠️ Adicione pelo menos um item ao pedido.");
+    return;
+  }
+
+  const mensagemEmbed = {
+    embeds: [{
+      title: "📦 NOVO PEDIDO – TROPA KOREA",
+      color: 16729344, // laranja
+      thumbnail: { url: "https://i.ibb.co/B2840v1j/Oni2.png" }, // LOGO KOREA
+      fields: [
+        {
+          name: "👤 **Dados do Comprador**",
+          value: `**Nome:** ${nome}\n**RG:** ${rg}\n**Telefone:** ${telefone}\n**Discord:** ${discord}`
+        },
+        {
+          name: "📦 **Itens Solicitados**",
+          value: itensLista
+        },
+        {
+          name: "💰 **Total do Pedido**",
+          value: `R$ ${total.toLocaleString()}`
+        },
+        {
+          name: "🏷️ **Tipo de Preço**",
+          value: tipoPreco.toUpperCase()
+        }
+      ],
+      footer: { text: `Solicitante: ${nome}` }
+    }]
+  };
+
+  fetch("https://discord.com/api/webhooks/1389717044714410024/B5oGMOdzFCoSWkKM8JSeJ0jGdePNl0wEjEUaYYhAulcq2fInSFjWxNjSs2h6KVk-981R", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(mensagemEmbed)
+  })
+  .then(r=>{
+    if(r.ok){
+      const b=document.getElementById("botaoPedido");
+      b.disabled=true;
+      b.innerText="Pedido Enviado";
+      document.getElementById("mensagemConfirmacao").innerText="✅ Pedido enviado com sucesso!";
+      setTimeout(()=>{
+        b.disabled=false;
+        b.innerText="🛒 Enviar Pedido";
+        document.getElementById("mensagemConfirmacao").innerText="";
+      },300000);
+    } else {
+      alert("❌ Erro ao enviar o pedido.");
+    }
+  })
+  .catch(e=>alert("❌ Falha na conexão: "+e));
+}
+
+</script>
+</body>
+</html>
